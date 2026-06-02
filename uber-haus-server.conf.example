@@ -30,3 +30,6 @@ RECONFIGURE_OMV=yes            # Reconfigure OMV to use different ports (recomme
 
 # Cloudflare API token with DNS edit permission (required for automatic Let's Encrypt certificate)
 CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
+
+# Email for Let's Encrypt notifications (optional, but recommended)
+CERTBOT_EMAIL="admin@your_domain"
