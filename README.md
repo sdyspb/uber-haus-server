@@ -52,7 +52,7 @@ sudo apt install -y git curl
 ```
 ### 2. Clone the repository
 ```bash
-git clone https://github.com/your-username/nextcloud-aio-omv-installer.git
+git clone https://github.com/your-username/uber-haus-server.git
 cd nextcloud-aio-omv-installer
 ```
 ### 3. Make scripts executable
