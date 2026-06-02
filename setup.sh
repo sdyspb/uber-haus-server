@@ -7,7 +7,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULES_DIR="$SCRIPT_DIR/modules"
-CONFIG_FILE="$SCRIPT_DIR/uber-haus-server.conf"
+CONFIG_FILE="/etc/uber-haus-server.conf"          # <-- изменено
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
@@ -20,7 +20,7 @@ check_root
 # Configuration file must exist
 if [[ ! -f "$CONFIG_FILE" ]]; then
     log_error "Configuration file not found: $CONFIG_FILE"
-    log_info "Copy uber-haus-server.conf.example to uber-haus-server.conf and edit it."
+    log_info "Copy uber-haus-server.conf.example to /etc/uber-haus-server.conf and edit it."
     exit 1
 fi
 
