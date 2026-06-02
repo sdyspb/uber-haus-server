@@ -3,6 +3,8 @@
 # Deploy Nextcloud AIO using Docker (Docker must already be installed)
 # =============================================================================
 
+source "$(dirname "$0")/00-utils.sh"
+
 if [[ "$INSTALL_NC_AIO" != "yes" ]]; then
     log_info "Nextcloud AIO skipped (INSTALL_NC_AIO != yes)"
     exit 0
