@@ -1,4 +1,7 @@
 #!/bin/bash
+# =============================================================================
+# Common utility functions for logging, detection, and module execution
+# =============================================================================
 
 log_info() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] $*" | tee -a "$LOG_DIR/setup.log"
@@ -37,8 +40,8 @@ Nextcloud access:
     https://$DOMAIN
 
 Admin credentials:
-    Login: $ADMIN_USER
-    Password: $ADMIN_PASS
+    Login: $NEXTCLOUD_ADMIN_USER
+    Password: $NEXTCLOUD_ADMIN_PASSWORD
 
 OMV web interface (after port change):
     http://<server-IP>:$OMV_HTTP_PORT
