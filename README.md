@@ -1,6 +1,6 @@
 # uber-haus-server
 
-This repository provides a modular, non‑interactive installer that sets up:
+This repository provides a modular installer that sets up:
 
 - [Tailscale](https://tailscale.com/) – secure VPN & automatic HTTPS certificates
 - [nginx](https://nginx.org/) – reverse proxy with HTTPS (using Tailscale certificates)
@@ -79,13 +79,32 @@ sudo nano /etc/uber-haus-server.conf   # fill DOMAIN and ADMIN_PASS
 cd /opt/uber-haus-server
 sudo ./setup.sh
 ```
-The installation is fully non‑interactive. It will:
+The installation will:
 
 - Validate your configuration
-- Install each selected component in sequence
+- Install each selected component according to checklist
 - Save logs to logs/setup.log
 
-### 6. After installation
+### 6. Interface
+
+* Whiptail menu: run selected modules, run all, edit config:
+
+<img width="590" height="325" alt="image" src="https://github.com/user-attachments/assets/14d1b23f-17be-4004-b66d-2a28f7bc7274" />
+
+* Each step checks if already done; skip unless Force reinstall is enabled:
+
+<img width="590" height="356" alt="image" src="https://github.com/user-attachments/assets/592ca72c-c55f-44d3-a97c-dfe67d1b78eb" />
+
+* Module status checks:
+
+| Module | Check |
+|--------|-------|
+| Tailscale | `tailscale status` shows "Connected" |
+| nginx + certificate | nginx site exists and certificate file present |
+| Nextcloud AIO | Docker container `nextcloud-aio-mastercontainer` running |
+| OMV ports | `/etc/nginx/.../openmediavault-webgui` uses custom ports |
+
+### 7. After installation
 
 - Authenticate Tailscale – open the URL shown after tailscale up in your browser and log in.
 - Access Nextcloud – open https://your-domain (you must be connected to your Tailnet).
