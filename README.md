@@ -50,7 +50,6 @@ sudo apt install -y git curl
 ```
 ### 2. Clone the repository
 ```bash
-cd /opt
 git clone git@github.com:sdyspb/uber-haus-server.git
 cd uber-haus-server
 ```
