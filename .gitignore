@@ -1,5 +1,5 @@
 logs/
 *.log
-config.conf
+uber-haus-server.conf
 *.crt
 *.key
