@@ -16,7 +16,7 @@ All configuration is done via a single commented file – no command‑line argu
 - **Hardware:** PixelNAS, BananaNAS or SBC running Armbian 
 - **Software:** Armbian with **OMV 7.x** (or 8.x) already installed.
 - **Docker:** Docker and docker-compose must be installed beforehand. The easiest way is via the OMV‑Compose plugin (Services → Compose → Settings → Install Docker). The installer will verify their presence and exit if not found.
-- **Disk:** A mounted data drive (e.g., NVMe/RAID) – the installer will automatically detect the first `/srv/dev-disk-by-uuid-*` directory.
+- **Disk:** A mounted data drive (e.g., NVMe/RAID) – the installer will automatically detect the first `/srv/dev-disk-by-uuid-*` directory or you can set it on your own - recommended.
 - **Network:** A domain name (e.g., `banananas.ru`) that you intend to use with Tailscale (no public DNS needed – works inside your Tailnet).
 
 ---
