@@ -1,40 +1,31 @@
-
 # =============================================================================
 # Configuration for Nextcloud AIO + Tailscale + nginx installer
 # =============================================================================
 
 # ---------- Required (must be filled) ----------
-DOMAIN=""                      # e.g., "banananas.ru"
-ADMIN_PASS=""                  # Nextcloud admin password (minimum 8 chars)
+DOMAIN="banananas.ru"                      # your fully qualified domain name
+ADMIN_PASS="nextcloud"                     # Nextcloud admin password (minimum 8 chars)
 
 # ---------- Optional (defaults are sane) ----------
-# Path to your persistent data directory (appdata). If empty, installer will
-# try to detect the first /srv/dev-disk-by-uuid-* folder and use /appdata.
-DATA_ROOT=""
+DATA_ROOT="/srv/dev-disk-by-uuid-XXXXX/appdata"   # leave empty to auto-detect
 
-NC_PORT=8080                   # Local port for Nextcloud AIO (internal, not exposed)
-NGINX_HTTPS_PORT=443           # External HTTPS port
-OMV_HTTP_PORT=8081             # New HTTP port for OMV web UI (after reconfiguration)
-OMV_HTTPS_PORT=8443            # New HTTPS port for OMV web UI
-ADMIN_USER=admin               # Nextcloud admin login
+NC_PORT=8080
+NGINX_HTTPS_PORT=443
+OMV_HTTP_PORT=8081
+OMV_HTTPS_PORT=8443
+ADMIN_USER=admin
 
-# ---------- Component selection (yes/no) ----------
 INSTALL_TAILSCALE=yes
 INSTALL_NGINX=yes
 INSTALL_NC_AIO=yes
-RECONFIGURE_OMV=yes            # Reconfigure OMV to use different ports (recommended)
-
-# Use Tailscale certificate (yes) or generate a self‑signed one (no)
-# This certificate uses ts.ns domain, so don't use it if you have API token of your special domain
-# USE_TAILSCALE_CERT=yes
+RECONFIGURE_OMV=yes
 
 # Cloudflare API token with DNS edit permission (required for automatic Let's Encrypt certificate)
 CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
 
-# Full curl command to verify Cloudflare API token (optional).
-# If set, the script will execute this command before obtaining the certificate, otherwise the command will be skipped
-# Example (replace with your actual command from Cloudflare):
-CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/.../verify" -H "Authorization: Mmm cfut_xxxx"'
-
 # Email for Let's Encrypt notifications (optional, but recommended)
-CERTBOT_EMAIL="admin@your_domain"
+CERTBOT_EMAIL="admin@example.com"
+
+# Full curl command to verify Cloudflare API token (optional).
+# If set, the script will execute this command before obtaining the certificate.
+CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer your-api-token"'
