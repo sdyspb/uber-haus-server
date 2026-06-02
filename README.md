@@ -21,6 +21,19 @@ All configuration is done via a single commented file – no command‑line argu
 
 ---
 
+## 🧭 DNS and SSL certificate
+
+This installer assumes you own a domain (e.g., `banananas.ru`) and have delegated its DNS management to **Cloudflare**.  
+You must create an **A record** pointing to your server's Tailscale IP address (e.g., `100.xxx.xxx.xxx`) with **proxy disabled** (DNS only).  
+
+The SSL certificate is obtained automatically using **Let's Encrypt DNS‑01 challenge** via Cloudflare API.  
+To enable this, you need a Cloudflare API token with **DNS:Edit** permission.  
+Add the token to the configuration file (`uber-haus-server.conf`) as `CLOUDFLARE_API_TOKEN`.
+
+After installation, your server will be accessible at `https://banananas.ru` (only from devices connected to your Tailnet, because the A record points to a Tailscale IP).
+
+---
+
 ## 🧩 Components – Before & After
 
 ### Before installation (system state)
