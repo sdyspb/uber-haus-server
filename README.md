@@ -62,11 +62,12 @@ chmod +x setup.sh modules/*.sh
 ```
 ### 4. Edit the configuration file
 ```bash
-cp uber-haus-server.conf.example uber-haus-server.conf
-nano uber-haus-server.conf
+sudo cp /opt/uber-haus-server/uber-haus-server.conf.example /etc/uber-haus-server.conf
+sudo nano /etc/uber-haus-server.conf   # fill DOMAIN and ADMIN_PASS
 ```
 ### 5. Run the installer as root
 ```bash
+cd /opt/uber-haus-server
 sudo ./setup.sh
 ```
 The installation is fully non‑interactive. It will:
