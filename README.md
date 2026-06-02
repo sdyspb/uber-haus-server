@@ -38,7 +38,7 @@ After installation, your server will be accessible at `https://banananas.ru` (on
 
 ### Before installation (system state)
 - OMV web interface listens on ports **80** and **443**
-- No Docker, no Tailscale, no nginx
+- Docker, no Tailscale, no nginx
 - No Nextcloud
 
 ### After installation
@@ -47,7 +47,6 @@ After installation, your server will be accessible at `https://banananas.ru` (on
 | **Tailscale**       | Installed and running. Your device will appear in your Tailnet.            |
 | **Tailscale certificate** | A Let's Encrypt certificate obtained for your domain (via `tailscale cert`) |
 | **nginx**           | Installed, configured as a reverse proxy for Nextcloud AIO on port 443.     |
-| **Docker**          | Installed (docker.io + docker-compose).                                    |
 | **Nextcloud AIO**   | Running as a Docker container, listening locally on port 8080.             |
 | **OMV ports**       | (If selected) Changed to `8081` (HTTP) and `8443` (HTTPS) to avoid conflicts. |
 | **HTTPS access**    | Your Nextcloud will be available at `https://your-domain` (inside your Tailnet). |
