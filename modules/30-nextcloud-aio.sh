@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# Deploy Nextcloud AIO using Docker (idempotent) - corrected for official AIO
+# Deploy Nextcloud AIO using Docker – corrected for official AIO with port 8443
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
@@ -56,6 +56,7 @@ services:
       - NEXTCLOUD_ADMIN_PASSWORD=$ADMIN_PASS
     ports:
       - "$NC_PORT:8080"
+      - "8443:8443"
 
 volumes:
   nextcloud_aio_mastercontainer:
@@ -66,3 +67,4 @@ cd "$DATA_ROOT/nextcloud_aio"
 docker compose up -d || docker-compose up -d
 
 log_info "Nextcloud AIO started. Initialization may take a few minutes."
+log_info "Port 8443 is now exposed. You can access the AIO interface via https://<server-IP>:8443"
