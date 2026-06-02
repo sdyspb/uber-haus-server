@@ -1,7 +1,5 @@
 # uber-haus-server
-Script for quick home server setup
-
-# Nextcloud AIO + Tailscale + nginx installer for Armbian / OMV
+Script for quick home server setup: Nextcloud AIO + Tailscale + nginx installer for Armbian / OMV
 
 This repository provides a modular, non‑interactive installer that sets up:
 
