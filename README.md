@@ -45,7 +45,7 @@ After installation, your server will be accessible at `https://banananas.ru` (on
 | Component           | Description                                                                 |
 |---------------------|-----------------------------------------------------------------------------|
 | **Tailscale**       | Installed and running. Your device will appear in your Tailnet.            |
-| **Tailscale certificate** | A Let's Encrypt certificate obtained for your domain (via `tailscale cert`) |
+| **Tailscale certificate** | A Let's Encrypt certificate obtained for your domain (via `DNS-01 challenge`) |
 | **nginx**           | Installed, configured as a reverse proxy for Nextcloud AIO on port 443.     |
 | **Nextcloud AIO**   | Running as a Docker container, listening locally on port 8080.             |
 | **OMV ports**       | (If selected) Changed to `8081` (HTTP) and `8443` (HTTPS) to avoid conflicts. |
