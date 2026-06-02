@@ -1,0 +1,103 @@
+#!/bin/bash
+source "$(dirname "$0")/00-utils.sh"
+
+if [[ "$INSTALL_NC_CLASSIC" != "yes" ]]; then
+    log_info "Nextcloud classic skipped"
+    exit 0
+fi
+
+if [[ "$FORCE" != "yes" ]] && docker ps --filter "name=nextcloud-app" --filter "status=running" | grep -q nextcloud-app; then
+    log_info "Nextcloud stack already running. Skipping."
+    exit 0
+fi
+
+log_info "Creating directories..."
+mkdir -p "$DATA_ROOT/nextcloud"/{db,redis,nextcloud,config}
+if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
+    mkdir -p "$DATA_ROOT/nextcloud/talk-hpb"
+fi
+chown -R 33:33 "$DATA_ROOT/nextcloud"
+
+if [[ "$INSTALL_TALK_HPB" == "yes" && -z "$TALK_SECRET" ]]; then
+    TALK_SECRET=$(openssl rand -base64 32)
+    log_info "Generated Talk secret: $TALK_SECRET (save this for Nextcloud settings)"
+fi
+
+log_info "Creating docker-compose.yml..."
+cat > "$DATA_ROOT/nextcloud/docker-compose.yml" <<EOF
+services:
+  db:
+    image: mariadb:11
+    container_name: nextcloud-db
+    restart: unless-stopped
+    command: --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW
+    volumes:
+      - $DATA_ROOT/nextcloud/db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=$ADMIN_PASS
+      - MYSQL_PASSWORD=$ADMIN_PASS
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+
+  redis:
+    image: redis:alpine
+    container_name: nextcloud-redis
+    restart: unless-stopped
+    command: redis-server --requirepass $ADMIN_PASS
+    volumes:
+      - $DATA_ROOT/nextcloud/redis:/data
+
+  app:
+    image: nextcloud:stable
+    container_name: nextcloud-app
+    restart: unless-stopped
+    ports:
+      - "$NC_PORT:80"
+    volumes:
+      - $DATA_ROOT/nextcloud/nextcloud:/var/www/html
+      - $DATA_ROOT/nextcloud/config:/var/www/html/config
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=nextcloud
+      - MYSQL_PASSWORD=$ADMIN_PASS
+      - REDIS_HOST=redis
+      - REDIS_HOST_PASSWORD=$ADMIN_PASS
+      - PUID=33
+      - PGID=33
+    depends_on:
+      - db
+      - redis
+EOF
+
+if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
+    cat >> "$DATA_ROOT/nextcloud/docker-compose.yml" <<EOF
+
+  talk-hpb:
+    image: ghcr.io/nextcloud-releases/talk-high-performance-backend:latest
+    container_name: nextcloud-talk-hpb
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8080"
+    volumes:
+      - $DATA_ROOT/nextcloud/talk-hpb:/config
+    environment:
+      - NEXTCLOUD_URL=https://$DOMAIN
+      - SECRET=$TALK_SECRET
+    depends_on:
+      - app
+EOF
+fi
+
+echo "" >> "$DATA_ROOT/nextcloud/docker-compose.yml"
+
+cd "$DATA_ROOT/nextcloud"
+if [[ "$FORCE" == "yes" ]]; then
+    docker compose down 2>/dev/null
+fi
+docker compose up -d
+
+log_info "Nextcloud stack started."
+if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
+    log_info "Talk HPB running on port 8081. Secret: $TALK_SECRET"
+fi
