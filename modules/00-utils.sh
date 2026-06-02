@@ -30,18 +30,6 @@ detect_data_root() {
     fi
 }
 
-run_module() {
-    local module="$1"
-    local module_path="$MODULES_DIR/$module"
-    if [[ -x "$module_path" ]]; then
-        log_info "Running module $module"
-        "$module_path"
-    else
-        log_error "Module $module_path not found or not executable"
-        exit 1
-    fi
-}
-
 print_summary() {
     cat <<EOF
 
@@ -59,7 +47,7 @@ OMV web interface (after port change):
     http://<server-IP>:$OMV_HTTP_PORT
     https://<server-IP>:$OMV_HTTPS_PORT
 
-Configuration saved in: $CONFIG_FILE
+Configuration file: $CONFIG_FILE
 Installation logs: $LOG_DIR/setup.log
 
 Check container status:
