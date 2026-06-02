@@ -45,12 +45,12 @@ All configuration is done via a single commented file – no command‑line argu
 
 ### 1. Prepare your system
 ```bash
-cd /opt
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y git curl
 ```
 ### 2. Clone the repository
 ```bash
+cd /opt
 git clone git@github.com:sdyspb/uber-haus-server.git
 cd uber-haus-server
 ```
