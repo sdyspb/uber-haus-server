@@ -95,7 +95,9 @@ The installation will:
 
 <img width="590" height="356" alt="image" src="https://github.com/user-attachments/assets/592ca72c-c55f-44d3-a97c-dfe67d1b78eb" />
 
-* Module status checks:
+---
+
+Module status checks:
 
 | Module | Check |
 |--------|-------|
