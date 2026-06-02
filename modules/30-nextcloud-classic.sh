@@ -1,4 +1,8 @@
 #!/bin/bash
+# =============================================================================
+# Deploy classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
+# =============================================================================
+
 source "$(dirname "$0")/00-utils.sh"
 
 if [[ "$INSTALL_NC_CLASSIC" != "yes" ]]; then
@@ -7,21 +11,21 @@ if [[ "$INSTALL_NC_CLASSIC" != "yes" ]]; then
 fi
 
 if [[ "$FORCE" != "yes" ]] && docker ps --filter "name=nextcloud-app" --filter "status=running" | grep -q nextcloud-app; then
-    log_info "Nextcloud stack already running. Skipping."
+    log_info "Nextcloud stack already running. Skipping (use FORCE=yes to recreate)."
     exit 0
 fi
 
-log_info "Creating directories..."
+log_info "Creating directories for classic Nextcloud..."
 mkdir -p "$DATA_ROOT/nextcloud"/{db,redis,nextcloud,config}
 if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
     mkdir -p "$DATA_ROOT/nextcloud/talk-hpb"
 fi
 chown -R 33:33 "$DATA_ROOT/nextcloud"
 
-if [[ "$INSTALL_TALK_HPB" == "yes" && -z "$TALK_SECRET" ]]; then
-    TALK_SECRET=$(openssl rand -base64 32)
-    log_info "Generated Talk secret: $TALK_SECRET (save this for Nextcloud settings)"
-fi
+# Generate random passwords if not set (fallback to NEXTCLOUD_ADMIN_PASSWORD)
+: "${MYSQL_PASSWORD:=$NEXTCLOUD_ADMIN_PASSWORD}"
+: "${REDIS_PASSWORD:=$NEXTCLOUD_ADMIN_PASSWORD}"
+: "${TALK_SECRET:=$(openssl rand -base64 32)}"
 
 log_info "Creating docker-compose.yml..."
 cat > "$DATA_ROOT/nextcloud/docker-compose.yml" <<EOF
@@ -34,16 +38,16 @@ services:
     volumes:
       - $DATA_ROOT/nextcloud/db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=$ADMIN_PASS
-      - MYSQL_PASSWORD=$ADMIN_PASS
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - MYSQL_ROOT_PASSWORD=$NEXTCLOUD_ADMIN_PASSWORD
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_USER=$MYSQL_USER
 
   redis:
     image: redis:alpine
     container_name: nextcloud-redis
     restart: unless-stopped
-    command: redis-server --requirepass $ADMIN_PASS
+    command: redis-server --requirepass $REDIS_PASSWORD
     volumes:
       - $DATA_ROOT/nextcloud/redis:/data
 
@@ -57,12 +61,14 @@ services:
       - $DATA_ROOT/nextcloud/nextcloud:/var/www/html
       - $DATA_ROOT/nextcloud/config:/var/www/html/config
     environment:
-      - MYSQL_HOST=db
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_PASSWORD=$ADMIN_PASS
+      - MYSQL_HOST=$MYSQL_HOST
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_USER=$MYSQL_USER
+      - MYSQL_PASSWORD=$MYSQL_PASSWORD
       - REDIS_HOST=redis
-      - REDIS_HOST_PASSWORD=$ADMIN_PASS
+      - REDIS_HOST_PASSWORD=$REDIS_PASSWORD
+      - NEXTCLOUD_ADMIN_USER=$NEXTCLOUD_ADMIN_USER
+      - NEXTCLOUD_ADMIN_PASSWORD=$NEXTCLOUD_ADMIN_PASSWORD
       - PUID=33
       - PGID=33
     depends_on:
@@ -93,11 +99,11 @@ echo "" >> "$DATA_ROOT/nextcloud/docker-compose.yml"
 
 cd "$DATA_ROOT/nextcloud"
 if [[ "$FORCE" == "yes" ]]; then
-    docker compose down 2>/dev/null
+    docker compose down -v 2>/dev/null
 fi
 docker compose up -d
 
 log_info "Nextcloud stack started."
 if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
-    log_info "Talk HPB running on port 8081. Secret: $TALK_SECRET"
+    log_info "Talk HPB is running on port 8081 (internal). Secret: $TALK_SECRET (save this for Nextcloud settings)"
 fi
