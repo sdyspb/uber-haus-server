@@ -104,24 +104,27 @@ while true; do
                 --checklist "Choose which steps to execute" 20 70 8 \
                 "${CHECKLIST[@]}" 3>&1 1>&2 2>&3)
 
-            if [[ $? -eq 0 ]]; then
+            if [[ $? -eq 0 && -n "$SELECTED_INDICES" ]]; then
                 # Ask for force reinstall
                 whiptail --title "Force reinstall?" \
                     --yesno "Run modules even if already installed/configured? (Yes = force, No = skip if done)" 10 60
                 FORCE=$([ $? -eq 0 ] && echo "yes" || echo "no")
 
-                # Run selected modules in natural order (sorted)
+                # Convert SELECTED_INDICES (string like "0 1 2") into array
+                # whiptail returns indices separated by spaces, possibly quoted? We'll handle both.
+                # Remove quotes and split
+                SELECTED_INDICES=$(echo "$SELECTED_INDICES" | tr -d '"')
                 for idx in $SELECTED_INDICES; do
-                    # whiptail returns indices separated by spaces
-                    # we need to preserve order according to MODULES array
-                    for order in "${!MODULES[@]}"; do
-                        if [[ "$order" == "$idx" ]]; then
-                            run_module_with_force "${MODULES[$order]}" "$FORCE"
-                            break
-                        fi
-                    done
+                    # Ensure idx is a number
+                    if [[ "$idx" =~ ^[0-9]+$ ]]; then
+                        run_module_with_force "${MODULES[$idx]}" "$FORCE"
+                    else
+                        log_error "Invalid index: $idx"
+                    fi
                 done
                 whiptail --msgbox "Selected modules completed." 8 40
+            else
+                log_info "No modules selected or cancelled."
             fi
             ;;
         2)
@@ -138,6 +141,10 @@ while true; do
             nano "$CONFIG_FILE"
             # Reload configuration after editing
             source "$CONFIG_FILE"
+            # Re-export variables
+            export DOMAIN ADMIN_PASS DATA_ROOT NC_PORT NGINX_HTTPS_PORT OMV_HTTP_PORT OMV_HTTPS_PORT
+            export ADMIN_USER INSTALL_TAILSCALE INSTALL_NGINX INSTALL_NC_AIO RECONFIGURE_OMV
+            export CLOUDFLARE_API_TOKEN CLOUDFLARE_VERIFY_CMD CERTBOT_EMAIL
             whiptail --msgbox "Configuration updated. Please verify parameters." 8 50
             ;;
         4)
