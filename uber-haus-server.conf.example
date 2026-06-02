@@ -4,7 +4,7 @@
 # =============================================================================
 
 # ---------- Required (must be filled) ----------
-DOMAIN=""                      # e.g., banananas.ru
+DOMAIN=""                      # e.g., "banananas.ru"
 ADMIN_PASS=""                  # Nextcloud admin password (minimum 8 chars)
 
 # ---------- Optional (defaults are sane) ----------
