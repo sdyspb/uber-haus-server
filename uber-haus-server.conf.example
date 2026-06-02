@@ -25,4 +25,8 @@ INSTALL_NC_AIO=yes
 RECONFIGURE_OMV=yes            # Reconfigure OMV to use different ports (recommended)
 
 # Use Tailscale certificate (yes) or generate a self‑signed one (no)
-USE_TAILSCALE_CERT=yes
+# This certificate uses ts.ns domain, so don't use it if you have API token of your special domain
+# USE_TAILSCALE_CERT=yes
+
+# Cloudflare API token with DNS edit permission (required for automatic Let's Encrypt certificate)
+CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
