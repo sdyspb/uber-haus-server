@@ -1,7 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Common utility functions for logging, detection, and module execution
-# =============================================================================
 
 log_info() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] $*" | tee -a "$LOG_DIR/setup.log"
@@ -36,10 +33,10 @@ print_summary() {
 =============================================================================
 ✅ Installation completed successfully!
 
-Nextcloud AIO access:
+Nextcloud access:
     https://$DOMAIN
 
-Nextcloud admin credentials:
+Admin credentials:
     Login: $ADMIN_USER
     Password: $ADMIN_PASS
 
@@ -48,14 +45,9 @@ OMV web interface (after port change):
     https://<server-IP>:$OMV_HTTPS_PORT
 
 Configuration file: $CONFIG_FILE
-Installation logs: $LOG_DIR/setup.log
+Logs: $LOG_DIR/setup.log
 
-Check container status:
-    docker ps
-
-View Nextcloud AIO logs:
-    docker logs nextcloud-aio-mastercontainer
-
+Check container status: docker ps
 =============================================================================
 EOF
 }
