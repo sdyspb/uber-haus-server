@@ -2,38 +2,43 @@
 # Configuration for Nextcloud Classic + Tailscale + nginx installer
 # =============================================================================
 
-# ---------- Required (must be filled) ----------
-DOMAIN="banananas.ru"                      # Your domain name (e.g., example.com)
-ADMIN_PASS="nextcloud"                     # Nextcloud admin password (change immediately after installation)
+# ---------- Domain & Admin ----------
+DOMAIN="banananas.ru"                     # Your domain (e.g., example.com)
+NEXTCLOUD_ADMIN_USER="admin"              # Nextcloud admin username
+NEXTCLOUD_ADMIN_PASSWORD="nextcloud"      # Nextcloud admin password
 
-# ---------- Optional (defaults are sane) ----------
-# Path to your persistent data directory (appdata). If empty, the installer will
-# auto‑detect the first /srv/dev-disk-by-uuid-* folder and use /appdata.
+# ---------- Paths ----------
+# Path to persistent data directory (appdata). If empty, auto-detect first /srv/dev-disk-by-uuid-*/appdata
 DATA_ROOT=""
 
-NC_PORT=8080                               # Internal HTTP port for Nextcloud (must match nginx proxy_pass)
-NGINX_HTTPS_PORT=443                       # External HTTPS port (usually 443)
-OMV_HTTP_PORT=8081                         # New HTTP port for OMV web UI (to avoid conflict with nginx)
-OMV_HTTPS_PORT=8443                        # New HTTPS port for OMV web UI
-ADMIN_USER=admin                           # Nextcloud admin username (can be changed later)
+# ---------- Ports ----------
+NC_PORT=8080                              # Internal HTTP port for Nextcloud (must match nginx proxy_pass)
+NGINX_HTTPS_PORT=443                      # External HTTPS port (usually 443)
+OMV_HTTP_PORT=8081                        # New HTTP port for OMV web UI
+OMV_HTTPS_PORT=8443                       # New HTTPS port for OMV web UI
 
-# ---------- Component selection (yes/no) ----------
-INSTALL_TAILSCALE=yes                      # Install and configure Tailscale VPN
-INSTALL_NGINX=yes                          # Install nginx and obtain SSL certificate via Let's Encrypt (DNS-01 with Cloudflare)
-INSTALL_NC_CLASSIC=yes                     # Install classic Nextcloud stack (MariaDB, Redis, optional Talk HPB)
-RECONFIGURE_OMV=yes                        # Change OMV web interface ports to free up 80/443 for nginx
+# ---------- Database (MariaDB) ----------
+MYSQL_DATABASE="nextcloud"                # Database name
+MYSQL_USER="nextcloud"                    # Database username
+MYSQL_PASSWORD=""                         # Database password (if empty, uses NEXTCLOUD_ADMIN_PASSWORD)
+MYSQL_HOST="db"                           # Database host (internal Docker service name)
 
-# ---------- Cloudflare API (required for Let's Encrypt DNS-01 challenge) ----------
-# Create an API token at Cloudflare with "DNS:Edit" permission
+# ---------- Redis ----------
+REDIS_PASSWORD=""                         # Redis password (if empty, uses NEXTCLOUD_ADMIN_PASSWORD)
+
+# ---------- Component selection ----------
+INSTALL_TAILSCALE=yes
+INSTALL_NGINX=yes
+INSTALL_NC_CLASSIC=yes
+RECONFIGURE_OMV=yes
+
+# ---------- Cloudflare API (for Let's Encrypt DNS-01 challenge) ----------
 CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
-# Email for Let's Encrypt notifications (optional but recommended)
 CERTBOT_EMAIL="admin@example.com"
 
-# Full curl command to verify Cloudflare API token (optional, but helps debugging)
-# Replace 'your-token' with your actual token.
+# Full curl command to verify Cloudflare API token (optional, but helpful for debugging)
 CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer your-token"'
 
 # ---------- Talk High-Performance Backend (optional) ----------
-# Set to "yes" to enable Talk HPB container. The secret will be auto-generated if left empty.
-INSTALL_TALK_HPB=no
-TALK_SECRET=""                             # Leave empty for auto-generation, or set a strong secret
+INSTALL_TALK_HPB=yes
+TALK_SECRET=""                            # Auto-generated if left empty
