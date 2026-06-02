@@ -1,0 +1,73 @@
+#!/bin/bash
+# =============================================================================
+# Common utility functions for logging, detection, and module execution
+# =============================================================================
+
+log_info() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] $*" | tee -a "$LOG_DIR/setup.log"
+}
+
+log_error() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [ERROR] $*" | tee -a "$LOG_DIR/setup.log" >&2
+}
+
+check_root() {
+    if [[ $EUID -ne 0 ]]; then
+        log_error "This script must be run as root (sudo)."
+        exit 1
+    fi
+}
+
+detect_data_root() {
+    local disk_path
+    disk_path=$(find /srv -maxdepth 1 -type d -name "dev-disk-by-uuid-*" | head -1)
+    if [[ -n "$disk_path" ]]; then
+        DATA_ROOT="${disk_path}/appdata"
+        log_info "Auto‑detected DATA_ROOT: $DATA_ROOT"
+    else
+        log_error "Could not auto‑detect DATA_ROOT. Please set it manually in $CONFIG_FILE."
+        exit 1
+    fi
+}
+
+run_module() {
+    local module="$1"
+    local module_path="$MODULES_DIR/$module"
+    if [[ -x "$module_path" ]]; then
+        log_info "Running module $module"
+        "$module_path"
+    else
+        log_error "Module $module_path not found or not executable"
+        exit 1
+    fi
+}
+
+print_summary() {
+    cat <<EOF
+
+=============================================================================
+✅ Installation completed successfully!
+
+Nextcloud AIO access:
+    https://$DOMAIN
+
+Nextcloud admin credentials:
+    Login: $ADMIN_USER
+    Password: $ADMIN_PASS
+
+OMV web interface (after port change):
+    http://<server-IP>:$OMV_HTTP_PORT
+    https://<server-IP>:$OMV_HTTPS_PORT
+
+Configuration saved in: $CONFIG_FILE
+Installation logs: $LOG_DIR/setup.log
+
+Check container status:
+    docker ps
+
+View Nextcloud AIO logs:
+    docker logs nextcloud-aio-mastercontainer
+
+=============================================================================
+EOF
+}
