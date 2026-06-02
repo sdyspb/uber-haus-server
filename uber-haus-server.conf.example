@@ -1,13 +1,11 @@
 # =============================================================================
-# Configuration for Nextcloud AIO + Tailscale + nginx installer
+# Configuration for Nextcloud Classic + Tailscale + nginx installer
 # =============================================================================
 
-# ---------- Required (must be filled) ----------
-DOMAIN="banananas.ru"                      # your fully qualified domain name
-ADMIN_PASS="nextcloud"                     # Nextcloud admin password (minimum 8 chars)
+DOMAIN="banananas.ru"
+ADMIN_PASS="nextcloud"
 
-# ---------- Optional (defaults are sane) ----------
-DATA_ROOT="/srv/dev-disk-by-uuid-XXXXX/appdata"   # leave empty to auto-detect
+DATA_ROOT=""   # auto-detected
 
 NC_PORT=8080
 NGINX_HTTPS_PORT=443
@@ -17,15 +15,11 @@ ADMIN_USER=admin
 
 INSTALL_TAILSCALE=yes
 INSTALL_NGINX=yes
-INSTALL_NC_AIO=yes
+INSTALL_NC_CLASSIC=yes
 RECONFIGURE_OMV=yes
 
-# Cloudflare API token with DNS edit permission (required for automatic Let's Encrypt certificate)
-CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
-
-# Email for Let's Encrypt notifications (optional, but recommended)
+CLOUDFLARE_API_TOKEN="your-token"
 CERTBOT_EMAIL="admin@example.com"
 
-# Full curl command to verify Cloudflare API token (optional).
-# If set, the script will execute this command before obtaining the certificate.
-CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer your-api-token"'
+INSTALL_TALK_HPB=yes
+TALK_SECRET=""   # auto-generated if empty
