@@ -3,6 +3,8 @@
 # Reconfigure OMV web interface ports to avoid conflict with nginx
 # =============================================================================
 
+source "$(dirname "$0")/00-utils.sh"
+
 if [[ "$RECONFIGURE_OMV" != "yes" ]]; then
     log_info "OMV reconfiguration skipped (RECONFIGURE_OMV != yes)"
     exit 0
