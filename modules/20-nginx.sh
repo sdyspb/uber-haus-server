@@ -29,6 +29,18 @@ dns_cloudflare_api_token = $CLOUDFLARE_API_TOKEN
 EOF
 chmod 600 "$CLOUDFLARE_CREDS"
 
+# Optional: verify Cloudflare API token using user-provided command
+if [[ -n "$CLOUDFLARE_VERIFY_CMD" ]]; then
+    log_info "Verifying Cloudflare API token using provided command..."
+    if ! eval "$CLOUDFLARE_VERIFY_CMD" | grep -q '"status":"active"'; then
+        log_error "Cloudflare API token verification failed. Check your token and command."
+        exit 1
+    fi
+    log_info "Cloudflare API token is valid."
+else
+    log_info "CLOUDFLARE_VERIFY_CMD not set; skipping token verification."
+fi
+
 # Set default email if not provided
 if [[ -z "$CERTBOT_EMAIL" ]]; then
     CERTBOT_EMAIL="admin@$DOMAIN"
