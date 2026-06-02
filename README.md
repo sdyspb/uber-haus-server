@@ -81,9 +81,9 @@ The installation is fully non‑interactive. It will:
 - Access Nextcloud – open https://your-domain (you must be connected to your Tailnet).
 - Complete Nextcloud AIO setup – the first run will guide you through the final steps (create admin account, configure database, etc.). The installer has already pre‑filled the admin user/password.
 
-⚠️ Important: The domain will only be reachable from devices inside your Tailscale network (Tailnet). If you want public access, you need to use Tailscale Funnel or a different setup.
+> ⚠️ Important: The domain will only be reachable from devices inside your Tailscale network (Tailnet). If you want public access, you need to use Tailscale Funnel or a different setup.
 
-🛠️ ### Troubleshooting
+### 🛠️ Troubleshooting
 
 - Logs: Check logs/setup.log for detailed error messages.
 - Tailscale not connected: Run tailscale up manually and follow the link.
