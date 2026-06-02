@@ -3,6 +3,8 @@
 # Install nginx and configure it as a reverse proxy for Nextcloud AIO
 # =============================================================================
 
+source "$(dirname "$0")/00-utils.sh"
+
 if [[ "$INSTALL_NGINX" != "yes" ]]; then
     log_info "nginx skipped (INSTALL_NGINX != yes)"
     exit 0
