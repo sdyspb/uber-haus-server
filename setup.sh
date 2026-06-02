@@ -1,13 +1,14 @@
 #!/bin/bash
 # =============================================================================
 # Main orchestrator for Nextcloud AIO + Tailscale + nginx installer
+# Provides interactive menu with checkboxes and force reinstall option.
 # =============================================================================
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 MODULES_DIR="$SCRIPT_DIR/modules"
-CONFIG_FILE="/etc/uber-haus-server.conf"          # <-- изменено
+CONFIG_FILE="/etc/uber-haus-server.conf"
 LOG_DIR="$SCRIPT_DIR/logs"
 mkdir -p "$LOG_DIR"
 
@@ -20,7 +21,7 @@ check_root
 # Configuration file must exist
 if [[ ! -f "$CONFIG_FILE" ]]; then
     log_error "Configuration file not found: $CONFIG_FILE"
-    log_info "Copy uber-haus-server.conf.example to /etc/uber-haus-server.conf and edit it."
+    log_info "Copy uber-haus-server.conf.example to $CONFIG_FILE and edit it."
     exit 1
 fi
 
@@ -38,16 +39,111 @@ if [[ -z "$DATA_ROOT" ]]; then
     detect_data_root
 fi
 
-# Export variables for all modules
+# Export all variables needed by modules
 export DOMAIN ADMIN_PASS DATA_ROOT NC_PORT NGINX_HTTPS_PORT OMV_HTTP_PORT OMV_HTTPS_PORT
-export ADMIN_USER INSTALL_TAILSCALE INSTALL_NGINX INSTALL_NC_AIO RECONFIGURE_OMV USE_TAILSCALE_CERT
+export ADMIN_USER INSTALL_TAILSCALE INSTALL_NGINX INSTALL_NC_AIO RECONFIGURE_OMV
+export CLOUDFLARE_API_TOKEN CLOUDFLARE_VERIFY_CMD CERTBOT_EMAIL
 export LOG_DIR
 
-log_info "Starting installation. Domain: $DOMAIN, DATA_ROOT: $DATA_ROOT"
+# Module list (order matters)
+MODULES=(
+    "10-tailscale.sh"
+    "20-nginx.sh"
+    "30-nextcloud-aio.sh"
+    "40-omv.sh"
+)
 
-run_module "10-tailscale.sh"
-run_module "20-nginx.sh"
-run_module "30-nextcloud-aio.sh"
-run_module "40-omv.sh"
+MODULE_NAMES=(
+    "Tailscale installation"
+    "nginx + SSL certificate"
+    "Nextcloud AIO"
+    "Reconfigure OMV ports"
+)
 
-print_summary
+# -------------------------------------------------------------------------
+# Helper: run a module (with optional force flag)
+# -------------------------------------------------------------------------
+run_module_with_force() {
+    local module="$1"
+    local force="$2"
+    local module_path="$MODULES_DIR/$module"
+
+    if [[ ! -x "$module_path" ]]; then
+        log_error "Module $module_path not found or not executable"
+        return 1
+    fi
+
+    log_info "Running module $module (force=$force)"
+    FORCE="$force" "$module_path"
+}
+
+# -------------------------------------------------------------------------
+# Main menu loop
+# -------------------------------------------------------------------------
+while true; do
+    CHOICE=$(whiptail --title "Nextcloud AIO Installer" \
+        --menu "Choose an action" 18 70 10 \
+        "1" "Run selected modules (checklist)" \
+        "2" "Run all modules (quick install)" \
+        "3" "Edit configuration file" \
+        "4" "Exit" \
+        3>&1 1>&2 2>&3)
+
+    if [[ $? -ne 0 ]]; then
+        break
+    fi
+
+    case "$CHOICE" in
+        1)
+            # Build checklist
+            CHECKLIST=()
+            for i in "${!MODULES[@]}"; do
+                CHECKLIST+=("$i" "${MODULE_NAMES[$i]}" ON)
+            done
+            SELECTED_INDICES=$(whiptail --title "Select modules to run" \
+                --checklist "Choose which steps to execute" 20 70 8 \
+                "${CHECKLIST[@]}" 3>&1 1>&2 2>&3)
+
+            if [[ $? -eq 0 ]]; then
+                # Ask for force reinstall
+                whiptail --title "Force reinstall?" \
+                    --yesno "Run modules even if already installed/configured? (Yes = force, No = skip if done)" 10 60
+                FORCE=$([ $? -eq 0 ] && echo "yes" || echo "no")
+
+                # Run selected modules in natural order (sorted)
+                for idx in $SELECTED_INDICES; do
+                    # whiptail returns indices separated by spaces
+                    # we need to preserve order according to MODULES array
+                    for order in "${!MODULES[@]}"; do
+                        if [[ "$order" == "$idx" ]]; then
+                            run_module_with_force "${MODULES[$order]}" "$FORCE"
+                            break
+                        fi
+                    done
+                done
+                whiptail --msgbox "Selected modules completed." 8 40
+            fi
+            ;;
+        2)
+            # Run all modules (quick install)
+            whiptail --title "Force reinstall?" \
+                --yesno "Run modules even if already installed/configured? (Yes = force, No = skip if done)" 10 60
+            FORCE=$([ $? -eq 0 ] && echo "yes" || echo "no")
+            for module in "${MODULES[@]}"; do
+                run_module_with_force "$module" "$FORCE"
+            done
+            whiptail --msgbox "All modules completed." 8 40
+            ;;
+        3)
+            nano "$CONFIG_FILE"
+            # Reload configuration after editing
+            source "$CONFIG_FILE"
+            whiptail --msgbox "Configuration updated. Please verify parameters." 8 50
+            ;;
+        4)
+            break
+            ;;
+    esac
+done
+
+log_info "Exited installer."
