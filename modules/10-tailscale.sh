@@ -3,6 +3,8 @@
 # Install Tailscale and obtain a certificate for the domain
 # =============================================================================
 
+source "$(dirname "$0")/00-utils.sh"
+
 if [[ "$INSTALL_TAILSCALE" != "yes" ]]; then
     log_info "Tailscale skipped (INSTALL_TAILSCALE != yes)"
     exit 0
