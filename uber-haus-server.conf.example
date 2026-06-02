@@ -32,7 +32,7 @@ RECONFIGURE_OMV=yes            # Reconfigure OMV to use different ports (recomme
 CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
 
 # Full curl command to verify Cloudflare API token (optional).
-# If set, the script will execute this command before obtaining the certificate.
+# If set, the script will execute this command before obtaining the certificate, otherwise the command will be skipped
 # Example (replace with your actual command from Cloudflare):
 CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/.../verify" -H "Authorization: Mmm cfut_xxxx"'
 
