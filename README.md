@@ -4,7 +4,7 @@ This repository provides a modular installer that sets up:
 
 - [Tailscale](https://tailscale.com/) – secure VPN & automatic HTTPS certificates
 - [nginx](https://nginx.org/) – reverse proxy with HTTPS (using Tailscale certificates)
-- [Nextcloud All‑in‑One](https://github.com/nextcloud/all-in-one) – the complete Nextcloud suite (including Files, Talk, etc.)
+- Nextcloud – Classic Nextcloud
 - (Optional) OMV web interface port reconfiguration (to free ports 80/443 for nginx)
 
 All configuration is done via a single commented file – no command‑line arguments are needed.
@@ -47,7 +47,7 @@ After installation, your server will be accessible at `https://banananas.ru` (on
 | **Tailscale**       | Installed and running. Your device will appear in your Tailnet.            |
 | **Tailscale certificate** | A Let's Encrypt certificate obtained for your domain (via `DNS-01 challenge`) |
 | **nginx**           | Installed, configured as a reverse proxy for Nextcloud AIO on port 443.     |
-| **Nextcloud AIO**   | Running as a Docker container, listening locally on port 8080.             |
+| **Nextcloud**   | Running as a Docker container, listening locally on port 8080.             |
 | **OMV ports**       | (If selected) Changed to `8081` (HTTP) and `8443` (HTTPS) to avoid conflicts. |
 | **HTTPS access**    | Your Nextcloud will be available at `https://your-domain` (inside your Tailnet). |
 
@@ -103,7 +103,7 @@ Module status checks:
 |--------|-------|
 | Tailscale | `tailscale status` shows "Connected" |
 | nginx + certificate | nginx site exists and certificate file present |
-| Nextcloud AIO | Docker container `nextcloud-aio-mastercontainer` running |
+| Nextcloud | Docker container `nextcloud-aio-mastercontainer` running |
 | OMV ports | `/etc/nginx/.../openmediavault-webgui` uses custom ports |
 
 ### 7. After installation
