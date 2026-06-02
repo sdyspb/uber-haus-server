@@ -1,13 +1,21 @@
 #!/bin/bash
 # =============================================================================
-# Install nginx, obtain SSL certificate via Let's Encrypt (DNS-01 with Cloudflare),
-# and configure reverse proxy for Nextcloud AIO
+# Install nginx, obtain SSL certificate via Let's Encrypt, configure reverse proxy
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
 
-if [[ "$INSTALL_NGINX" != "yes" ]]; then
-    log_info "nginx skipped (INSTALL_NGINX != yes)"
+# Check if already configured
+is_nginx_ready() {
+    if [[ -f "/etc/nginx/sites-available/nextcloud" ]] && \
+       [[ -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
+        return 0
+    fi
+    return 1
+}
+
+if [[ "$FORCE" != "yes" ]] && is_nginx_ready; then
+    log_info "nginx and SSL certificate already configured. Skipping (use FORCE=yes to reconfigure)."
     exit 0
 fi
 
@@ -29,7 +37,7 @@ dns_cloudflare_api_token = $CLOUDFLARE_API_TOKEN
 EOF
 chmod 600 "$CLOUDFLARE_CREDS"
 
-# Optional: verify Cloudflare API token using user-provided command
+# Optional token verification
 if [[ -n "$CLOUDFLARE_VERIFY_CMD" ]]; then
     log_info "Verifying Cloudflare API token using provided command..."
     if ! eval "$CLOUDFLARE_VERIFY_CMD" | grep -q '"status":"active"'; then
