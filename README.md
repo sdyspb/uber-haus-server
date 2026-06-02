@@ -62,8 +62,8 @@ chmod +x setup.sh modules/*.sh
 ```
 ### 4. Edit the configuration file
 ```bash
-cp config.conf.example config.conf
-nano config.conf
+cp uber-haus-server.conf.example config.conf
+nano uber-haus-server.conf
 ```
 ### 5. Run the installer as root
 ```bash
