@@ -1,24 +1,31 @@
 #!/bin/bash
 # =============================================================================
-# Deploy Nextcloud AIO using Docker (Docker must already be installed)
+# Deploy Nextcloud AIO using Docker (idempotent)
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
 
-if [[ "$INSTALL_NC_AIO" != "yes" ]]; then
-    log_info "Nextcloud AIO skipped (INSTALL_NC_AIO != yes)"
+# Check if already running
+is_nextcloud_running() {
+    if docker ps --filter "name=nextcloud-aio-mastercontainer" --filter "status=running" | grep -q nextcloud-aio-mastercontainer; then
+        return 0
+    fi
+    return 1
+}
+
+if [[ "$FORCE" != "yes" ]] && is_nextcloud_running; then
+    log_info "Nextcloud AIO container is already running. Skipping (use FORCE=yes to recreate)."
     exit 0
 fi
 
 log_info "Checking Docker availability..."
 if ! command -v docker &> /dev/null; then
-    log_error "Docker is not installed. Please install Docker first (e.g., via OMV extras or 'apt install docker.io docker-compose')."
+    log_error "Docker is not installed. Please install Docker first (e.g., via OMV extras)."
     exit 1
 fi
 
-# Check for docker-compose (either standalone or plugin)
 if ! command -v docker-compose &> /dev/null && ! docker compose version &> /dev/null; then
-    log_error "docker-compose not found. Please install docker-compose (e.g., via OMV extras or 'apt install docker-compose')."
+    log_error "docker-compose not found. Please install docker-compose."
     exit 1
 fi
 
@@ -49,6 +56,9 @@ services:
 EOF
 
 cd "$DATA_ROOT/nextcloud_aio"
+if [[ "$FORCE" == "yes" ]]; then
+    docker compose down || docker-compose down
+fi
 docker compose up -d || docker-compose up -d
 
 log_info "Nextcloud AIO started. Initialization may take a few minutes."
