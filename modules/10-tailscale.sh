@@ -1,29 +1,17 @@
 #!/bin/bash
-# =============================================================================
-# Install Tailscale and set up the Tailnet (idempotent)
-# =============================================================================
-
 source "$(dirname "$0")/00-utils.sh"
 
-# Check if already installed and authenticated
-is_tailscale_ready() {
-    if command -v tailscale &> /dev/null && tailscale status 2>/dev/null | grep -q "Connected"; then
-        return 0
-    fi
-    return 1
-}
+if [[ "$INSTALL_TAILSCALE" != "yes" ]]; then
+    log_info "Tailscale skipped"
+    exit 0
+fi
 
-if [[ "$FORCE" != "yes" ]] && is_tailscale_ready; then
-    log_info "Tailscale already installed and authenticated. Skipping (use FORCE=yes to reinstall)."
+if [[ "$FORCE" != "yes" ]] && command -v tailscale &> /dev/null && tailscale status 2>/dev/null | grep -q "Connected"; then
+    log_info "Tailscale already running. Skipping."
     exit 0
 fi
 
 log_info "Installing Tailscale..."
-if ! command -v tailscale &> /dev/null; then
-    curl -fsSL https://tailscale.com/install.sh | sh
-fi
-
-log_info "Starting Tailscale (requires manual authentication)..."
+curl -fsSL https://tailscale.com/install.sh | sh
 tailscale up --advertise-exit-node --accept-routes || true
-
-log_info "Tailscale setup completed."
+log_info "Tailscale setup completed. Authenticate via the displayed URL if needed."
