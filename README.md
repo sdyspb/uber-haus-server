@@ -49,3 +49,43 @@ All configuration is done via a single commented file – no command‑line argu
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install -y git curl
+```
+### 2. Clone the repository
+```bash
+git clone https://github.com/your-username/nextcloud-aio-omv-installer.git
+cd nextcloud-aio-omv-installer
+```
+### 3. Make scripts executable
+```bash
+chmod +x setup.sh modules/*.sh
+```
+### 4. Edit the configuration file
+```bash
+cp config.conf.example config.conf
+nano config.conf
+```
+### 5. Run the installer as root
+```bash
+sudo ./setup.sh
+```
+The installation is fully non‑interactive. It will:
+
+- Validate your configuration
+- Install each selected component in sequence
+- Save logs to logs/setup.log
+
+### 6. After installation
+
+- Authenticate Tailscale – open the URL shown after tailscale up in your browser and log in.
+- Access Nextcloud – open https://your-domain (you must be connected to your Tailnet).
+- Complete Nextcloud AIO setup – the first run will guide you through the final steps (create admin account, configure database, etc.). The installer has already pre‑filled the admin user/password.
+
+⚠️ Important: The domain will only be reachable from devices inside your Tailscale network (Tailnet). If you want public access, you need to use Tailscale Funnel or a different setup.
+
+🛠️ ### Troubleshooting
+
+- Logs: Check logs/setup.log for detailed error messages.
+- Tailscale not connected: Run tailscale up manually and follow the link.
+- Certificate not ready: Wait a few minutes after tailscale cert or run tailscale cert your-domain manually.
+- Nextcloud AIO not starting: Use docker ps to see if the container is running. View logs with docker logs nextcloud-aio-mastercontainer.
+- OMV web interface still on 80/443: The installer modifies the OMV nginx site. If you skipped that step, change ports manually in /etc/nginx/sites-enabled/openmediavault-webgui.
