@@ -1,4 +1,9 @@
 #!/bin/bash
+# =============================================================================
+# Utility functions for logging, detection, and summary
+# Version: 2.0
+# Author: sdyspb
+# =============================================================================
 
 log_info() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] $*" | tee -a "$LOG_DIR/setup.log"
