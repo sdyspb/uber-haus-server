@@ -92,11 +92,11 @@ The installation will:
 
 * Whiptail menu: run selected modules, run all, edit config:
 
-<img width="590" height="325" alt="image" src="https://github.com/user-attachments/assets/14d1b23f-17be-4004-b66d-2a28f7bc7274" />
+<img width="589" height="325" alt="image" src="https://github.com/user-attachments/assets/473c74da-249f-4f37-83b9-7df4ceac0fac" />
 
 * Each step checks if already done; skip unless Force reinstall is enabled:
 
-<img width="590" height="356" alt="image" src="https://github.com/user-attachments/assets/592ca72c-c55f-44d3-a97c-dfe67d1b78eb" />
+<img width="585" height="353" alt="image" src="https://github.com/user-attachments/assets/127023e9-8158-4d19-abe8-bcb3098aaa9b" />
 
 ---
 
