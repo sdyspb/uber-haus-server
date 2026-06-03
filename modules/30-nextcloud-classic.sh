@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Module 30: Deploy classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
-# Version: 2.0
+# Version: 3.0
 # Author: sdyspb
 # =============================================================================
 
@@ -74,6 +74,9 @@ services:
       - REDIS_HOST_PASSWORD=$REDIS_PASSWORD
       - NEXTCLOUD_ADMIN_USER=$NEXTCLOUD_ADMIN_USER
       - NEXTCLOUD_ADMIN_PASSWORD=$NEXTCLOUD_ADMIN_PASSWORD
+      - TRUSTED_DOMAINS=$NEXTCLOUD_DOMAIN
+      - OVERWRITEHOST=$NEXTCLOUD_DOMAIN
+      - OVERWRITEPROTOCOL=https
       - PUID=33
       - PGID=33
     depends_on:
@@ -93,7 +96,7 @@ if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
     volumes:
       - $DATA_ROOT/nextcloud/talk-hpb:/config
     environment:
-      - NEXTCLOUD_URL=https://$DOMAIN
+      - NEXTCLOUD_URL=https://$NEXTCLOUD_DOMAIN
       - SECRET=$TALK_SECRET
     depends_on:
       - app
@@ -108,7 +111,7 @@ if [[ "$FORCE" == "yes" ]]; then
 fi
 docker compose up -d
 
-log_info "Nextcloud stack started."
+log_info "Nextcloud stack started with domain $NEXTCLOUD_DOMAIN."
 if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
     log_info "Talk HPB running on port 8081. Secret: $TALK_SECRET"
 fi
