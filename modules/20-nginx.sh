@@ -1,8 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# Module 20: Install nginx, obtain SSL certificate via Let's Encrypt (DNS-01),
-#            configure reverse proxy for Nextcloud and optional OMV subdomain.
-# Version: 2.0
+# Module 20: Install nginx, obtain SSL certificate (SAN for all domains),
+#            configure reverse proxy for Nextcloud, OMV, and landing page.
+# Version: 3.0
 # Author: sdyspb
 # =============================================================================
 
@@ -39,31 +39,60 @@ if [[ -z "$CERTBOT_EMAIL" ]]; then
     log_info "Using default email: $CERTBOT_EMAIL"
 fi
 
-log_info "Obtaining Let's Encrypt certificate for $DOMAIN..."
+log_info "Obtaining Let's Encrypt certificate for $DOMAIN, $NEXTCLOUD_DOMAIN, $OMV_DOMAIN..."
 certbot certonly --dns-cloudflare --dns-cloudflare-credentials "$CLOUDFLARE_CREDS" \
-    --non-interactive --agree-tos --email "$CERTBOT_EMAIL" -d "$DOMAIN"
+    --non-interactive --agree-tos --email "$CERTBOT_EMAIL" \
+    -d "$DOMAIN" -d "$NEXTCLOUD_DOMAIN" -d "$OMV_DOMAIN"
 
 if [[ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
     log_error "Certificate retrieval failed."
     exit 1
 fi
 
-mkdir -p /etc/nginx/ssl
-cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" /etc/nginx/ssl/banananas.ru.crt
-cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" /etc/nginx/ssl/banananas.ru.key
-chmod 644 /etc/nginx/ssl/banananas.ru.crt
-chmod 600 /etc/nginx/ssl/banananas.ru.key
+# --------------------------------------------------------------------------
+# Create landing page (static placeholder)
+# --------------------------------------------------------------------------
+mkdir -p /var/www/landing
+cat > /var/www/landing/index.html <<EOF
+<!DOCTYPE html>
+<html>
+<head><title>$DOMAIN</title></head>
+<body>
+<h1>Welcome to $DOMAIN</h1>
+<p>Services:</p>
+<ul>
+    <li><a href="https://$NEXTCLOUD_DOMAIN">Nextcloud</a></li>
+    <li><a href="https://$OMV_DOMAIN">OMV</a></li>
+</ul>
+</body>
+</html>
+EOF
 
 # --------------------------------------------------------------------------
-# Configure Nextcloud reverse proxy
+# Configure nginx sites
 # --------------------------------------------------------------------------
-cat > /etc/nginx/sites-available/nextcloud <<EOF
+# Landing page
+cat > /etc/nginx/sites-available/landing <<EOF
 server {
     listen $NGINX_HTTPS_PORT ssl;
     server_name $DOMAIN;
 
-    ssl_certificate /etc/nginx/ssl/banananas.ru.crt;
-    ssl_certificate_key /etc/nginx/ssl/banananas.ru.key;
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+
+    root /var/www/landing;
+    index index.html;
+}
+EOF
+
+# Nextcloud reverse proxy
+cat > /etc/nginx/sites-available/nextcloud <<EOF
+server {
+    listen $NGINX_HTTPS_PORT ssl;
+    server_name $NEXTCLOUD_DOMAIN;
+
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     client_max_body_size 10G;
 
@@ -95,22 +124,17 @@ fi
 
 echo "}" >> /etc/nginx/sites-available/nextcloud
 
-# --------------------------------------------------------------------------
-# Configure OMV subdomain reverse proxy (if requested)
-# --------------------------------------------------------------------------
-if [[ -n "$OMV_SUBDOMAIN" ]]; then
-    log_info "Configuring nginx for OMV subdomain: $OMV_SUBDOMAIN"
-    cat > /etc/nginx/sites-available/omv <<EOF
+# OMV reverse proxy (HTTP backend, because OMV listens on 8081)
+cat > /etc/nginx/sites-available/omv <<EOF
 server {
     listen $NGINX_HTTPS_PORT ssl;
-    server_name $OMV_SUBDOMAIN;
+    server_name $OMV_DOMAIN;
 
-    ssl_certificate /etc/nginx/ssl/banananas.ru.crt;
-    ssl_certificate_key /etc/nginx/ssl/banananas.ru.key;
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
 
     location / {
-        proxy_pass https://127.0.0.1:$OMV_HTTPS_PORT;
-        proxy_ssl_verify off;
+        proxy_pass http://127.0.0.1:$OMV_HTTP_PORT;
         proxy_set_header Host \$host;
         proxy_set_header X-Real-IP \$remote_addr;
         proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
@@ -118,12 +142,14 @@ server {
     }
 }
 EOF
-    ln -sf /etc/nginx/sites-available/omv /etc/nginx/sites-enabled/
-fi
 
+# Enable sites
+ln -sf /etc/nginx/sites-available/landing /etc/nginx/sites-enabled/
 ln -sf /etc/nginx/sites-available/nextcloud /etc/nginx/sites-enabled/
+ln -sf /etc/nginx/sites-available/omv /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
+# Test and reload nginx
 sudo nginx -t
 sudo systemctl restart nginx
-log_info "nginx configured for $DOMAIN and OMV subdomain (if set)."
+log_info "nginx configured for $DOMAIN, $NEXTCLOUD_DOMAIN, $OMV_DOMAIN."
