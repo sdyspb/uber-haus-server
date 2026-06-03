@@ -1,7 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# Install nginx, obtain SSL certificate, configure reverse proxy
-# for Nextcloud and optionally for OMV subdomain.
+# Module 20: Install nginx, obtain SSL certificate via Let's Encrypt (DNS-01),
+#            configure reverse proxy for Nextcloud and optional OMV subdomain.
+# Version: 2.0
+# Author: sdyspb
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
@@ -20,7 +22,6 @@ log_info "Installing nginx and certbot..."
 apt-get update
 apt-get install -y nginx certbot python3-certbot-dns-cloudflare
 
-# Obtain certificate if not already present
 if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
     log_error "CLOUDFLARE_API_TOKEN not set."
     exit 1
@@ -47,7 +48,6 @@ if [[ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
     exit 1
 fi
 
-# Copy certificates to nginx ssl directory
 mkdir -p /etc/nginx/ssl
 cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" /etc/nginx/ssl/banananas.ru.crt
 cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" /etc/nginx/ssl/banananas.ru.key
@@ -121,11 +121,9 @@ EOF
     ln -sf /etc/nginx/sites-available/omv /etc/nginx/sites-enabled/
 fi
 
-# Enable Nextcloud site and disable default
 ln -sf /etc/nginx/sites-available/nextcloud /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
-# Test and restart nginx
 sudo nginx -t
 sudo systemctl restart nginx
 log_info "nginx configured for $DOMAIN and OMV subdomain (if set)."
