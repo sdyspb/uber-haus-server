@@ -1,7 +1,4 @@
 #!/bin/bash
-# =============================================================================
-# Common utility functions for logging, detection, and module execution
-# =============================================================================
 
 log_info() {
     echo "$(date '+%Y-%m-%d %H:%M:%S') [INFO] $*" | tee -a "$LOG_DIR/setup.log"
@@ -46,6 +43,11 @@ Admin credentials:
 OMV web interface (after port change):
     http://<server-IP>:$OMV_HTTP_PORT
     https://<server-IP>:$OMV_HTTPS_PORT
+EOF
+    if [[ -n "$OMV_SUBDOMAIN" ]]; then
+        echo "OMV subdomain (if configured): https://$OMV_SUBDOMAIN"
+    fi
+    cat <<EOF
 
 Configuration file: $CONFIG_FILE
 Logs: $LOG_DIR/setup.log
