@@ -40,5 +40,10 @@ CERTBOT_EMAIL="admin@example.com"
 CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer your-token"'
 
 # ---------- Talk High-Performance Backend (optional) ----------
-INSTALL_TALK_HPB=yes
+INSTALL_TALK_HPB=no
 TALK_SECRET=""                            # Auto-generated if left empty
+
+# ---------- OMV subdomain (optional) ----------
+# If set, nginx will proxy OMV to this subdomain on standard HTTPS port (443)
+# Example: OMV_SUBDOMAIN="omv.banananas.ru"
+OMV_SUBDOMAIN="omv.banananas.ru"
