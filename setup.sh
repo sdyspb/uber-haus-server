@@ -1,4 +1,11 @@
 #!/bin/bash
+# =============================================================================
+# Uber Haus Server – Main orchestrator for Nextcloud Classic + Tailscale + nginx
+# Version: 2.0
+# Author: sdyspb
+# License: MIT
+# =============================================================================
+
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -114,7 +121,6 @@ while true; do
         3)
             nano "$CONFIG_FILE"
             source "$CONFIG_FILE"
-            # Re-export after editing
             export DOMAIN NEXTCLOUD_ADMIN_USER NEXTCLOUD_ADMIN_PASSWORD
             export DATA_ROOT NC_PORT NGINX_HTTPS_PORT OMV_HTTP_PORT OMV_HTTPS_PORT
             export INSTALL_TAILSCALE INSTALL_NGINX INSTALL_NC_CLASSIC RECONFIGURE_OMV
