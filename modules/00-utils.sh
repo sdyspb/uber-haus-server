@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Utility functions for logging, detection, and summary
-# Version: 2.0
+# Version: 3.0
 # Author: sdyspb
 # =============================================================================
 
@@ -39,20 +39,17 @@ print_summary() {
 ✅ Installation completed successfully!
 
 Nextcloud access:
-    https://$DOMAIN
+    https://$NEXTCLOUD_DOMAIN
 
 Admin credentials:
     Login: $NEXTCLOUD_ADMIN_USER
     Password: $NEXTCLOUD_ADMIN_PASSWORD
 
-OMV web interface (after port change):
-    http://<server-IP>:$OMV_HTTP_PORT
-    https://<server-IP>:$OMV_HTTPS_PORT
-EOF
-    if [[ -n "$OMV_SUBDOMAIN" ]]; then
-        echo "OMV subdomain (if configured): https://$OMV_SUBDOMAIN"
-    fi
-    cat <<EOF
+OMV web interface:
+    https://$OMV_DOMAIN
+
+Landing page (static placeholder):
+    https://$DOMAIN
 
 Configuration file: $CONFIG_FILE
 Logs: $LOG_DIR/setup.log
