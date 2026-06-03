@@ -3,28 +3,29 @@
 # =============================================================================
 
 # ---------- Domain & Admin ----------
-DOMAIN="banananas.ru"                     # Your domain (e.g., example.com)
+DOMAIN="banananas.ru"                     # Primary domain (landing page)
+NEXTCLOUD_SUBDOMAIN="nextcloud"           # Subdomain for Nextcloud (will be nextcloud.DOMAIN)
+OMV_SUBDOMAIN="omv"                       # Subdomain for OMV (will be omv.DOMAIN)
 NEXTCLOUD_ADMIN_USER="admin"              # Nextcloud admin username
 NEXTCLOUD_ADMIN_PASSWORD="nextcloud"      # Nextcloud admin password
 
 # ---------- Paths ----------
-# Path to persistent data directory (appdata). If empty, auto-detect first /srv/dev-disk-by-uuid-*/appdata
-DATA_ROOT=""
+DATA_ROOT=""                              # Auto-detect if empty
 
 # ---------- Ports ----------
-NC_PORT=8080                              # Internal HTTP port for Nextcloud (must match nginx proxy_pass)
-NGINX_HTTPS_PORT=443                      # External HTTPS port (usually 443)
+NC_PORT=8080                              # Internal HTTP port for Nextcloud
+NGINX_HTTPS_PORT=443                      # External HTTPS port
 OMV_HTTP_PORT=8081                        # New HTTP port for OMV web UI
 OMV_HTTPS_PORT=8443                       # New HTTPS port for OMV web UI
 
 # ---------- Database (MariaDB) ----------
-MYSQL_DATABASE="nextcloud"                # Database name
-MYSQL_USER="nextcloud"                    # Database username
-MYSQL_PASSWORD=""                         # Database password (if empty, uses NEXTCLOUD_ADMIN_PASSWORD)
-MYSQL_HOST="db"                           # Database host (internal Docker service name)
+MYSQL_DATABASE="nextcloud"
+MYSQL_USER="nextcloud"
+MYSQL_PASSWORD=""                         # If empty, uses NEXTCLOUD_ADMIN_PASSWORD
+MYSQL_HOST="db"
 
 # ---------- Redis ----------
-REDIS_PASSWORD=""                         # Redis password (if empty, uses NEXTCLOUD_ADMIN_PASSWORD)
+REDIS_PASSWORD=""                         # If empty, uses NEXTCLOUD_ADMIN_PASSWORD
 
 # ---------- Component selection ----------
 INSTALL_TAILSCALE=yes
@@ -32,18 +33,11 @@ INSTALL_NGINX=yes
 INSTALL_NC_CLASSIC=yes
 RECONFIGURE_OMV=yes
 
-# ---------- Cloudflare API (for Let's Encrypt DNS-01 challenge) ----------
-CLOUDFLARE_API_TOKEN="your-cloudflare-api-token"
+# ---------- Cloudflare API ----------
+CLOUDFLARE_API_TOKEN="your-token"
 CERTBOT_EMAIL="admin@example.com"
-
-# Full curl command to verify Cloudflare API token (optional, but helpful for debugging)
 CLOUDFLARE_VERIFY_CMD='curl "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer your-token"'
 
-# ---------- Talk High-Performance Backend (optional) ----------
-INSTALL_TALK_HPB=no
-TALK_SECRET=""                            # Auto-generated if left empty
-
-# ---------- OMV subdomain (optional) ----------
-# If set, nginx will proxy OMV to this subdomain on standard HTTPS port (443)
-# Example: OMV_SUBDOMAIN="omv.banananas.ru"
-OMV_SUBDOMAIN="omv.banananas.ru"
+# ---------- Talk HPB (optional) ----------
+INSTALL_TALK_HPB=yes
+TALK_SECRET=""
