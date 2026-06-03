@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # Module 40: Reconfigure OMV web interface ports to avoid conflict with nginx
-# Version: 2.0
+# Version: 3.0
 # Author: sdyspb
 # =============================================================================
 
