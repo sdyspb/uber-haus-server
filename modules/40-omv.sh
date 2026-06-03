@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
-# Reconfigure OMV web interface ports (HTTP: 8081, HTTPS: 8443) and ensure the site is enabled
+# Reconfigure OMV web interface ports to avoid conflict with nginx.
+# Ensures OMV listens on $OMV_HTTP_PORT (HTTP) and $OMV_HTTPS_PORT (HTTPS).
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
@@ -10,43 +11,33 @@ if [[ "$RECONFIGURE_OMV" != "yes" ]]; then
     exit 0
 fi
 
-OMV_SITE_AVAIL="/etc/nginx/sites-available/openmediavault-webgui"
-if [[ ! -f "$OMV_SITE_AVAIL" ]]; then
-    log_error "OMV nginx config not found. Is OMV installed?"
-    exit 1
-fi
-
-# Check if already reconfigured (IPv4 HTTP port 8081)
-if [[ "$FORCE" != "yes" ]] && grep -q "listen 0.0.0.0:8081" "$OMV_SITE_AVAIL"; then
-    log_info "OMV ports already changed. Skipping (use FORCE=yes to reapply)."
+OMV_CONFIG="/etc/nginx/sites-available/openmediavault-webgui"
+if [[ ! -f "$OMV_CONFIG" ]]; then
+    log_info "OMV nginx site not found – OMV may not be installed."
     exit 0
 fi
 
-log_info "Reconfiguring OMV web interface ports: HTTP $OMV_HTTP_PORT, HTTPS $OMV_HTTPS_PORT"
-
-# Backup original
-cp "$OMV_SITE_AVAIL" "${OMV_SITE_AVAIL}.backup"
-
-# Change HTTP port for IPv4 and IPv6
-sed -i 's/listen 0.0.0.0:80 default_server;/listen 0.0.0.0:8081 default_server;/' "$OMV_SITE_AVAIL"
-sed -i 's/listen \[::\]:80 default_server;/listen \[::\]:8081 default_server;/' "$OMV_SITE_AVAIL"
-
-# If HTTPS section exists (with ssl), change its port; if not, add a simple HTTPS block using existing certs
-if grep -q "listen 443 ssl" "$OMV_SITE_AVAIL"; then
-    sed -i 's/listen 443 ssl default_server;/listen 8443 ssl default_server;/' "$OMV_SITE_AVAIL"
-    sed -i 's/listen \[::\]:443 ssl default_server;/listen \[::\]:8443 ssl default_server;/' "$OMV_SITE_AVAIL"
-else
-    # Insert an HTTPS server block after the HTTP server block (simplified)
-    # This is a fallback; normally OMV already has HTTPS enabled
-    log_info "Adding HTTPS server block for OMV using Nextcloud certificate"
-    sed -i "/listen \[::\]:8081 default_server;/a\\\n    listen 8443 ssl default_server;\n    listen \[::\]:8443 ssl default_server;\n    ssl_certificate /etc/nginx/ssl/banananas.ru.crt;\n    ssl_certificate_key /etc/nginx/ssl/banananas.ru.key;\n" "$OMV_SITE_AVAIL"
+# Check if already reconfigured
+if [[ "$FORCE" != "yes" ]] && grep -q "listen $OMV_HTTP_PORT default_server;" "$OMV_CONFIG"; then
+    log_info "OMV ports already changed to $OMV_HTTP_PORT / $OMV_HTTPS_PORT. Skipping."
+    exit 0
 fi
 
-# Ensure the site is enabled
-ln -sf "$OMV_SITE_AVAIL" /etc/nginx/sites-enabled/
+log_info "Changing OMV web interface ports to $OMV_HTTP_PORT (HTTP) and $OMV_HTTPS_PORT (HTTPS)..."
 
-# Test and reload nginx
-nginx -t
-systemctl restart nginx
+# Replace listen directives
+sudo sed -i "s/listen 80 default_server;/listen $OMV_HTTP_PORT default_server;/" "$OMV_CONFIG"
+sudo sed -i "s/listen \[::\]:80 default_server;/listen \[::\]:$OMV_HTTP_PORT default_server;/" "$OMV_CONFIG"
+sudo sed -i "s/listen 443 ssl default_server;/listen $OMV_HTTPS_PORT ssl default_server;/" "$OMV_CONFIG"
+sudo sed -i "s/listen \[::\]:443 ssl default_server;/listen \[::\]:$OMV_HTTPS_PORT ssl default_server;/" "$OMV_CONFIG"
 
-log_info "OMV ports changed. Web interface is now accessible on ports $OMV_HTTP_PORT (HTTP) and $OMV_HTTPS_PORT (HTTPS)."
+# Ensure IPv4 listen for HTTPS port (if missing, add it)
+if ! grep -q "listen 0.0.0.0:$OMV_HTTPS_PORT" "$OMV_CONFIG"; then
+    sudo sed -i "/listen \[::\]:$OMV_HTTPS_PORT ssl default_server;/i\    listen 0.0.0.0:$OMV_HTTPS_PORT ssl default_server;" "$OMV_CONFIG"
+fi
+
+# Regenerate OMV nginx config via salt (to keep consistency)
+sudo omv-salt deploy run nginx
+
+sudo systemctl restart nginx
+log_info "OMV ports changed and nginx reloaded."
