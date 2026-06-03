@@ -1,7 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# Install classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
-# Uses modern configuration variables.
+# Module 30: Deploy classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
+# Version: 2.0
+# Author: sdyspb
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
@@ -16,7 +17,6 @@ if [[ "$FORCE" != "yes" ]] && docker ps --filter "name=nextcloud-app" --filter "
     exit 0
 fi
 
-# Set default passwords if empty
 [[ -z "$MYSQL_PASSWORD" ]] && MYSQL_PASSWORD="$NEXTCLOUD_ADMIN_PASSWORD"
 [[ -z "$REDIS_PASSWORD" ]] && REDIS_PASSWORD="$NEXTCLOUD_ADMIN_PASSWORD"
 
