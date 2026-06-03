@@ -1,0 +1,56 @@
+==================== FAQ (Troubleshooting) ====================
+
+1. Tailscale shows "offline" or "relay" connection
+   - On server: sudo systemctl restart tailscaled
+   - Then: tailscale up --accept-routes
+   - On Windows client: tailscale up --accept-routes
+   - Check direct connection: tailscale ping banananas
+
+2. DNS resolution fails for subdomains on client
+   - Add entries to Windows hosts file (C:\Windows\System32\drivers\etc\hosts):
+       100.67.109.112 nextcloud.banananas.ru
+       100.67.109.112 omv.banananas.ru
+   - Flush DNS: ipconfig /flushdns
+
+3. Browser shows "Not secure" or certificate error after correct setup
+   - Clear browser cache and HSTS settings
+   - Chrome: chrome://net-internals/#hsts → Delete domain security policies
+   - Restart browser or reboot client
+
+4. Nextcloud login loops or "Access through untrusted domain"
+   - On server:
+     docker exec -it nextcloud-app php /var/www/html/occ config:system:set trusted_domains 0 --value="nextcloud.banananas.ru"
+     docker exec -it nextcloud-app php /var/www/html/occ config:system:set overwritehost --value="nextcloud.banananas.ru"
+
+5. OMV web interface not accessible via https://omv.banananas.ru
+   - Check OMV is listening on port 8081:
+     curl -I http://127.0.0.1:8081
+   - Ensure nginx config for omv subdomain exists:
+     ls /etc/nginx/sites-enabled/omv
+   - Re-run module 40 with force: cd /opt/uber-haus-server && export FORCE=yes && sudo -E bash modules/40-omv.sh
+
+6. Cannot connect to any service (ping fails, connection timeout)
+   - Verify Tailscale status on server: tailscale status
+   - Verify IP forwarding: sudo sysctl net.ipv4.ip_forward=1 (add to /etc/sysctl.conf)
+   - Temporarily disable firewall: sudo ufw disable (test only)
+
+7. Certificate renewal fails
+   - Check Cloudflare API token: curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer YOUR_TOKEN"
+   - Renew manually: sudo certbot renew --force-renewal
+
+8. Nextcloud Talk HPB not working (502 Bad Gateway)
+   - Ensure talk-hpb container is running: docker ps | grep talk-hpb
+   - Check secret matches in Nextcloud settings (Administration → Talk)
+   - Verify nginx location /standalone-signaling/ is proxied
+
+9. After reconfiguring subdomains, old bookmarks still use IP or old domain
+   - Update bookmarks to new domain (e.g., nextcloud.banananas.ru)
+   - Clear browser cache and saved passwords for the old domain
+
+10. Need to completely restart the whole setup
+    - Stop all containers: cd /srv/.../appdata/nextcloud && docker compose down -v
+    - Remove data folders: rm -rf /srv/.../appdata/nextcloud
+    - Remove nginx configs: sudo rm /etc/nginx/sites-enabled/nextcloud /etc/nginx/sites-enabled/omv /etc/nginx/sites-enabled/landing
+    - Then re-run the installer.
+
+For more details, check logs: /opt/uber-haus-server/logs/setup.log
