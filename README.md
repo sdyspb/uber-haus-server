@@ -98,8 +98,6 @@ The installation will:
 
 <img width="585" height="353" alt="image" src="https://github.com/user-attachments/assets/127023e9-8158-4d19-abe8-bcb3098aaa9b" />
 
----
-
 ### Module status checks
 
 | Module                    | Check                                                                 |
@@ -131,6 +129,8 @@ The installation will:
 - **Talk HPB not working:** Ensure the secret matches and the nginx location `/standalone-signaling/` is proxied correctly.
 - **OMV web interface still on 80/443:** The installer modifies the OMV nginx site. If you skipped that step, change ports manually in `/etc/nginx/sites-enabled/openmediavault-webgui` or re‑run module 40 with `Force = Yes`.
 - **OMV subdomain not responding:** Verify that `OMV_SUBDOMAIN` is set in the config and that the A record for the subdomain points to your Tailscale IP (DNS only). Then re‑run module 20 with `Force = Yes`.
+
+---
 
 ### 📜 Acknowledgements & Licenses
 
