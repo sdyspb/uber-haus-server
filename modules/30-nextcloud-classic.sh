@@ -1,6 +1,7 @@
 #!/bin/bash
 # =============================================================================
-# Deploy classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
+# Install classic Nextcloud stack (MariaDB, Redis, Nextcloud, optional Talk HPB)
+# Uses modern configuration variables.
 # =============================================================================
 
 source "$(dirname "$0")/00-utils.sh"
@@ -15,17 +16,21 @@ if [[ "$FORCE" != "yes" ]] && docker ps --filter "name=nextcloud-app" --filter "
     exit 0
 fi
 
-log_info "Creating directories for classic Nextcloud..."
+# Set default passwords if empty
+[[ -z "$MYSQL_PASSWORD" ]] && MYSQL_PASSWORD="$NEXTCLOUD_ADMIN_PASSWORD"
+[[ -z "$REDIS_PASSWORD" ]] && REDIS_PASSWORD="$NEXTCLOUD_ADMIN_PASSWORD"
+
+log_info "Creating directories..."
 mkdir -p "$DATA_ROOT/nextcloud"/{db,redis,nextcloud,config}
 if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
     mkdir -p "$DATA_ROOT/nextcloud/talk-hpb"
 fi
 chown -R 33:33 "$DATA_ROOT/nextcloud"
 
-# Generate random passwords if not set (fallback to NEXTCLOUD_ADMIN_PASSWORD)
-: "${MYSQL_PASSWORD:=$NEXTCLOUD_ADMIN_PASSWORD}"
-: "${REDIS_PASSWORD:=$NEXTCLOUD_ADMIN_PASSWORD}"
-: "${TALK_SECRET:=$(openssl rand -base64 32)}"
+if [[ "$INSTALL_TALK_HPB" == "yes" && -z "$TALK_SECRET" ]]; then
+    TALK_SECRET=$(openssl rand -base64 32)
+    log_info "Generated Talk secret: $TALK_SECRET (save this for Nextcloud settings)"
+fi
 
 log_info "Creating docker-compose.yml..."
 cat > "$DATA_ROOT/nextcloud/docker-compose.yml" <<EOF
@@ -38,7 +43,7 @@ services:
     volumes:
       - $DATA_ROOT/nextcloud/db:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=$NEXTCLOUD_ADMIN_PASSWORD
+      - MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD
       - MYSQL_PASSWORD=$MYSQL_PASSWORD
       - MYSQL_DATABASE=$MYSQL_DATABASE
       - MYSQL_USER=$MYSQL_USER
@@ -99,11 +104,11 @@ echo "" >> "$DATA_ROOT/nextcloud/docker-compose.yml"
 
 cd "$DATA_ROOT/nextcloud"
 if [[ "$FORCE" == "yes" ]]; then
-    docker compose down -v 2>/dev/null
+    docker compose down 2>/dev/null
 fi
 docker compose up -d
 
 log_info "Nextcloud stack started."
 if [[ "$INSTALL_TALK_HPB" == "yes" ]]; then
-    log_info "Talk HPB is running on port 8081 (internal). Secret: $TALK_SECRET (save this for Nextcloud settings)"
+    log_info "Talk HPB running on port 8081. Secret: $TALK_SECRET"
 fi
