@@ -134,7 +134,7 @@ The installation will:
 
 ### 📜 Acknowledgements & Licenses
 
-This project builds upon and includes components from the following Open Source projects. We thank their authors and respect their licenses.
+This project builds upon and includes components from the following Open Source projects. Thank their authors and respect their licenses.
 
 - **[Tailscale](https://tailscale.com/)** – BSD 3‑Clause License  
   Used for secure VPN networking and automatic HTTPS certificates (DNS‑01 challenge).
