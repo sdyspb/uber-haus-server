@@ -1,4 +1,10 @@
 #!/bin/bash
+# =============================================================================
+# Module 10: Install and configure Tailscale VPN
+# Version: 2.0
+# Author: sdyspb
+# =============================================================================
+
 source "$(dirname "$0")/00-utils.sh"
 
 if [[ "$INSTALL_TAILSCALE" != "yes" ]]; then
