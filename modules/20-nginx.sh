@@ -2,7 +2,7 @@
 # =============================================================================
 # Module 20: Install nginx, obtain SSL certificate (SAN for all domains),
 #            configure reverse proxy for Nextcloud, OMV, and landing page.
-# Version: 3.0
+# Version: 3.1
 # Author: sdyspb
 # =============================================================================
 
@@ -50,10 +50,16 @@ if [[ ! -f "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" ]]; then
 fi
 
 # --------------------------------------------------------------------------
-# Create landing page (static placeholder)
+# Create landing page (static placeholder or user-provided)
 # --------------------------------------------------------------------------
 mkdir -p /var/www/landing
-cat > /var/www/landing/index.html <<EOF
+
+if [[ -f "$SCRIPT_DIR/landing.html" ]]; then
+    log_info "Copying user-provided landing page from $SCRIPT_DIR/landing.html"
+    cp "$SCRIPT_DIR/landing.html" /var/www/landing/index.html
+else
+    log_info "Creating default landing page"
+    cat > /var/www/landing/index.html <<EOF
 <!DOCTYPE html>
 <html>
 <head><title>$DOMAIN</title></head>
@@ -67,6 +73,9 @@ cat > /var/www/landing/index.html <<EOF
 </body>
 </html>
 EOF
+fi
+
+chown -R www-data:www-data /var/www/landing
 
 # --------------------------------------------------------------------------
 # Configure nginx sites
@@ -150,6 +159,5 @@ ln -sf /etc/nginx/sites-available/omv /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 
 # Test and reload nginx
-sudo nginx -t
-sudo systemctl restart nginx
+nginx -t && systemctl restart nginx
 log_info "nginx configured for $DOMAIN, $NEXTCLOUD_DOMAIN, $OMV_DOMAIN."
